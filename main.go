@@ -124,8 +124,13 @@ func main() {
 		return events[i].time.Before(events[j].time)
 	})
 
+	lastDay := ""
 	for _, event := range events {
-		fmt.Printf("%s ", event.time.Weekday().String())
-		fmt.Println(event.Title)
+		nextDay := event.time.Weekday().String()
+		if nextDay != lastDay {
+			lastDay = nextDay
+			fmt.Println(nextDay)
+		}
+		fmt.Printf("  %s [%s] %s (at %s)\n", event.time.Format("3:04PM"), event.Org, event.Title, event.Location.Name)
 	}
 }
