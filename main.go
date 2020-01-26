@@ -105,7 +105,31 @@ func cloneRepo() error {
 	return cmd.Run()
 }
 
+func updateRepo() error {
+	dir, err := getRepoDir()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("git", "pull", "origin", "master")
+	cmd.Dir = dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func main() {
+	command := "week"
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "update":
+			command = "update"
+		case "today":
+			command = "today"
+		default:
+			panic("unknown command")
+		}
+	}
+
 	exists, err := repoExists()
 	if err != nil {
 		panic(err)
@@ -113,6 +137,11 @@ func main() {
 
 	if !exists {
 		cloneRepo()
+	}
+
+	if command == "update" {
+		updateRepo()
+		return
 	}
 
 	events, err := getEvents()
