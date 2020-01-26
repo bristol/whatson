@@ -38,7 +38,7 @@ func getRepoDir() (string, error) {
 	return fmt.Sprintf("%s/.bristol-events", home), nil
 }
 
-func getEvents() ([]Event, error) {
+func getEvents(after, before time.Time) ([]Event, error) {
 	var files []string
 	dir, err := getRepoDir()
 	if err != nil {
@@ -58,9 +58,6 @@ func getEvents() ([]Event, error) {
 		panic(err)
 	}
 
-	now := time.Now()
-	inOneWeek := now.AddDate(0, 0, 7)
-
 	var events []Event
 	var event Event
 	for _, file := range files {
@@ -75,7 +72,7 @@ func getEvents() ([]Event, error) {
 
 		event.time = time.Unix(event.StartTime, 0)
 
-		if event.time.Before(inOneWeek) && event.time.After(now) {
+		if event.time.Before(before) && event.time.After(after) {
 			events = append(events, event)
 		}
 	}
@@ -144,7 +141,16 @@ func main() {
 		return
 	}
 
-	events, err := getEvents()
+	after := time.Now()
+	var before time.Time
+	switch command {
+	case "week":
+		before = after.AddDate(0, 0, 7)
+	case "today":
+		before = after.AddDate(0, 0, 1)
+	}
+
+	events, err := getEvents(after, before)
 	if err != nil {
 		panic(err)
 	}
