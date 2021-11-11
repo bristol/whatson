@@ -38,6 +38,21 @@ func getRepoDir() (string, error) {
 	return fmt.Sprintf("%s/.bristol-events", home), nil
 }
 
+func readJson(file string, event *Event) error {
+	jsonFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer jsonFile.Close()
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(byteValue, event)
+	return err
+}
+
 func getEvents(after, before time.Time) ([]Event, error) {
 	var files []string
 	dir, err := getRepoDir()
@@ -61,14 +76,7 @@ func getEvents(after, before time.Time) ([]Event, error) {
 	var events []Event
 	var event Event
 	for _, file := range files {
-		jsonFile, err := os.Open(file)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer jsonFile.Close()
-
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &event)
+		readJson(file, &event)
 
 		event.time = time.Unix(event.StartTime, 0)
 
